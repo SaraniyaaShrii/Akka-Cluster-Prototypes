@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Akka.Common.Util;
+using Akka.Cluster.API.Actors;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -7,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.SelfHost;
+using Akka.Actor;
+using Akka.Routing;
 
 namespace Akka.Cluster.API
 {
@@ -34,6 +38,8 @@ namespace Akka.Cluster.API
 
         public void Start()
         {
+            InitializeActorSystem();
+
             EventLog.WriteEntry(EventSource, "Starting HttpApiService server.");
             selfHostServer.OpenAsync();
         }
@@ -43,6 +49,12 @@ namespace Akka.Cluster.API
             EventLog.WriteEntry(EventSource, "Stopping HttpApiService server.");
             selfHostServer.CloseAsync().Wait();
             selfHostServer.Dispose();
+        }
+
+        private static void InitializeActorSystem()
+        {
+            AkkaComponents.ActorSystem = Extensions.CreateActorSystem();
+            AkkaComponents.RequestHandlerActor = AkkaComponents.ActorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), "requestHandlerActor");
         }
 
         private void CreateEventLog(string baseAddress)

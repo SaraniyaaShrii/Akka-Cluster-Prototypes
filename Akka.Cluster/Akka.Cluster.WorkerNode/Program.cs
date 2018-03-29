@@ -1,5 +1,4 @@
 ﻿using Akka.Actor;
-using Akka.Cluster.Common;
 using Akka.Cluster.API.Actors;
 using Akka.Routing;
 using System;
@@ -9,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Akka.Configuration.Hocon;
+using Akka.Common;
+using Akka.Common.Util;
 
 namespace Akka.Cluster.API
 {
@@ -16,13 +17,9 @@ namespace Akka.Cluster.API
     {
         static void Main(string[] args)
         {
-            string actorSystemName = ConfigurationManager.AppSettings[Constants.ConfigKeys.ActorSystemName];
-            string sectionName = "akka";
-            var configuration = ((AkkaConfigurationSection)ConfigurationManager.GetSection(sectionName)).AkkaConfig;
-            var actorSystem = ActorSystem.Create(actorSystemName, configuration);
+            ActorSystem actorSystem = Extensions.CreateActorSystem();
 
-
-            var consoleWriterActor = actorSystem.ActorOf(Props.Create<ConsoleWriterActor>().WithRouter(FromConfig.Instance), "consoleWriterActor");
+            var consoleWriterActor = actorSystem.ActorOf(Props.Create<LogWriterActor>().WithRouter(FromConfig.Instance), "consoleWriterActor");
 
             actorSystem.ActorOf(Props.Create(() => new RequestHandlerActor(consoleWriterActor)), "requestHandlerActor");
 

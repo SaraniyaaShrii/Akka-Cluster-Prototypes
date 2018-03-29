@@ -1,8 +1,9 @@
 ﻿using Akka.Actor;
 using Akka.Cluster.API.Messages;
-using Akka.Cluster.Common.Messages;
+using Akka.Common.Messages;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,11 +13,11 @@ namespace Akka.Cluster.API.Actors
 {
     public class RequestHandlerActor : ReceiveActor
     {
-        private readonly IActorRef _consoleWriterActor;
+        private readonly IActorRef _logWriterActor;
 
-        public RequestHandlerActor(IActorRef consoleWriterActor)
+        public RequestHandlerActor(IActorRef logWriterActor)
         {
-            _consoleWriterActor = consoleWriterActor;
+            _logWriterActor = logWriterActor;
 
             ReceiveAny(requestMsg =>
             {
@@ -27,12 +28,15 @@ namespace Akka.Cluster.API.Actors
 
                     var request = (AttributionRequest)requestMsg;
 
-                    string consoleMsg = string.Format("{0}Some message received. Request_id: {1}, Sender: {2}, Obj address: {3}", 
+                    string logMsg = string.Format("{0}Some message received. Request_id: {1}, Sender: {2}, Obj address: {3}", 
                         Environment.NewLine, request.RequestId, Sender.Path.Uid.ToString(), ptr.ToString());
-                    string filePath = @"B:\Prototypes\Akka-samples 3\Test files\TestFile.txt";
-                    File.AppendAllText(filePath, consoleMsg);
 
-                    _consoleWriterActor.Tell(requestMsg);
+                    string filename = "TestFile.txt";
+                    string filePath = string.Format("{0}{1}", ConfigurationManager.AppSettings["TestFilePath"], filename);
+
+                    File.AppendAllText(filePath, logMsg);
+
+                    _logWriterActor.Tell(requestMsg);
 
                 }
 

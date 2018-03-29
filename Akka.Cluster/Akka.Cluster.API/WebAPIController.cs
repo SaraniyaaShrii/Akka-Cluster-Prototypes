@@ -1,8 +1,10 @@
 ﻿using Akka.Actor;
-using Akka.Cluster.Common;
-using Akka.Cluster.Common.Messages;
+using Akka.Cluster.API.Actors;
+using Akka.Common.Messages;
+using Akka.Common.Util;
 using Akka.Configuration.Hocon;
 using Akka.Routing;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -18,64 +20,45 @@ namespace Akka.Cluster.API
     {
         public string Get()
         {
-            string actorSystemName = ConfigurationManager.AppSettings[Constants.ConfigKeys.ActorSystemName];
-            string sectionName = "akka";
-            var configuration = ((AkkaConfigurationSection)ConfigurationManager.GetSection(sectionName)).AkkaConfig;
-            var actorSystem = ActorSystem.Create(actorSystemName, configuration);
-
-            var requestHandlerActor = actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), "requestHandlerActor");
-            Thread.Sleep(5000);
-
-            var routees = requestHandlerActor.Ask<Routees>(new GetRoutees()).Result.Members;
-
-            //while (routees.Any() == false)
-            //{
-            //    Thread.Sleep(1000);
-            //}
-
-
             var request = new AttributionRequest()
             {
                 FundId = 1,
             };
-            requestHandlerActor.Tell(request);
 
-            actorSystem.WhenTerminated.Wait();
+            InitiateProcess(request);
 
             return "welcome";
         }
-
-        //public string Get(string name)
-        //{
-        //    return "Welcome " + name;
-        //}
-
-        //public void Post(string name)
-        //{
-        //    Get(name);
-        //}
-
-        public string Post(AttributionRequest request)
+        
+        [HttpPost]
+        public string Post([FromBody]JObject request)
         {
-            string actorSystemName = ConfigurationManager.AppSettings[Constants.ConfigKeys.ActorSystemName];
-            string sectionName = "akka";
-            var configuration = ((AkkaConfigurationSection)ConfigurationManager.GetSection(sectionName)).AkkaConfig;
-            var actorSystem = ActorSystem.Create(actorSystemName, configuration);
+            var attribReq = request.ToObject<AttributionRequest>();
 
-            var requestHandlerActor = actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), "requestHandlerActor");
+            InitiateProcess(attribReq);
 
-            var routees = requestHandlerActor.Ask<Routees>(new GetRoutees()).Result.Members;
+            //actorSystem.WhenTerminated.Wait();
 
-            while (routees.Any() == false)
+            return "";
+        }
+
+        private void InitiateProcess(AttributionRequest request)
+        {
+            //ActorSystem actorSystem = Akka.Common.Util.Extensions.CreateActorSystem();
+
+            //var requestHandlerActor = actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), "requestHandlerActor");
+
+            //var requestHandlerActor = AkkaComponents.ActorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), "requestHandlerActor");
+            var requestHandlerActor = AkkaComponents.RequestHandlerActor;
+
+            IEnumerable<Routee> routees;
+            do
             {
                 Thread.Sleep(1000);
-            }
-           
+                routees = requestHandlerActor.Ask<Routees>(new GetRoutees()).Result.Members;
+            } while (routees.Any() == false);
+
             requestHandlerActor.Tell(request);
-
-            actorSystem.WhenTerminated.Wait();
-
-            return "Request processing";
         }
     }
 }

@@ -1,6 +1,0 @@
-
-Some message received. Request_id: 10000001, Sender: 1686672175, Obj address: 89302552
-Some message received. Request_id: 10000002, Sender: 1686672175, Obj address: 89503140
-Some message received. Request_id: 10000004, Sender: 1686672175, Obj address: 89521448
-Some message received. Request_id: 10000006, Sender: 1686672175, Obj address: 89540884
-Some message received. Request_id: 10000005, Sender: 1686672175, Obj address: 89530296
