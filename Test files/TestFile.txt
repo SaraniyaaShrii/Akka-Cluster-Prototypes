@@ -1,4 +1,0 @@
-
-Some message received. Request_id: 0, Sender: 0, Obj address: 56128408
-Some message received. Request_id: 0, Sender: 0, Obj address: 56436236
-Some message received. Request_id: 0, Sender: 0, Obj address: 56573308

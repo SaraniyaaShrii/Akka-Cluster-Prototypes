@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Akka.Configuration.Hocon;
 using Akka.Common;
 using Akka.Common.Util;
+using log4net;
 
 namespace Akka.Cluster.API
 {
@@ -17,13 +18,22 @@ namespace Akka.Cluster.API
     {
         static void Main(string[] args)
         {
+            Console.Title = "Akka.Cluster.WorkerNode";
+            log4net.Config.XmlConfigurator.Configure();
             ActorSystem actorSystem = Extensions.CreateActorSystem();
 
-            var consoleWriterActor = actorSystem.ActorOf(Props.Create<LogWriterActor>().WithRouter(FromConfig.Instance), "consoleWriterActor");
+            var logWriterActor = actorSystem.ActorOf(Props.Create<LogWriterActor>().WithRouter(FromConfig.Instance), "logWriterActor");
 
-            actorSystem.ActorOf(Props.Create(() => new RequestHandlerActor(consoleWriterActor)), "requestHandlerActor");
+            //var reqHandlerProps = Props.Create(() => new RequestHandlerActor(logWriterActor)).WithRouter(FromConfig.Instance);
+            //var requestHandlerActor = actorSystem.ActorOf(reqHandlerProps, "requestHandlerActor");
+
+            var requestHandlerActor = actorSystem.ActorOf(Props.Create(() => new RequestHandlerActor(logWriterActor)), "requestHandlerActor");
+
+            var logWriterRoutees = logWriterActor.Ask<Routees>(new GetRoutees()).Result.Members;
+            var reqHandlerRoutees = requestHandlerActor.Ask<Routees>(new GetRoutees()).Result.Members;
 
             actorSystem.WhenTerminated.Wait();
         }
     }
 }
+

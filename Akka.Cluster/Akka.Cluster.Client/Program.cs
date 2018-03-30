@@ -1,4 +1,5 @@
 ﻿using Akka.Common.Messages;
+using log4net;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -16,16 +17,22 @@ namespace Akka.Cluster.Client
 {
     class Program
     {
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(Program));
+
         static void Main(string[] args)
         {
-            Thread.Sleep(5000);
-            object lockObject = new object();
+            Console.Title = "Akka.Cluster.Client";
 
+            Thread.Sleep(5000);
+
+            log4net.Config.XmlConfigurator.Configure();
+            Logger.InfoFormat("Requesting Akka cluster API service for attribution stats...");
             Console.WriteLine("Requesting Akka cluster API service for attribution stats...");
 
             int requestId = 1;
+            int randomRequestCount = 6;
 
-            int randomRequestCount = 3;
+            object lockObject = new object();
 
             Task[] tasks = new Task[randomRequestCount];
 
@@ -41,8 +48,8 @@ namespace Akka.Cluster.Client
 
             Task.WaitAll(tasks);
 
-
             Console.WriteLine("Finished....");
+            Logger.InfoFormat("Finished....");
         }
 
         private static void RequestAttributionAPI(int requestId)

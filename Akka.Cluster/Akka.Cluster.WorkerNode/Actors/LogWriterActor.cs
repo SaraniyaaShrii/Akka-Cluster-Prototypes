@@ -1,36 +1,28 @@
-﻿using Akka.Actor;
-using Akka.Cluster.API.Messages;
-using Akka.Common.Messages;
-using log4net;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
+﻿using System;
+using Akka.Actor;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Akka.Common.Messages;
+using System.Configuration;
+using log4net;
 
-namespace Akka.Cluster.API.Actors
+namespace Akka.Cluster.API
 {
-    public class RequestHandlerActor : ReceiveActor
+    public class LogWriterActor : ReceiveActor
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(RequestHandlerActor));
-        private readonly IActorRef _logWriterActor;
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(LogWriterActor));
 
-        public RequestHandlerActor(IActorRef logWriterActor)
+        public LogWriterActor()
         {
-            _logWriterActor = logWriterActor;
-
-            Receive<AttributionRequest>(requestMsg => Handler(requestMsg));
+            Receive<AttributionRequest>(msg => Handler(msg));
         }
 
-        private void Handler(AttributionRequest requestMsg)
+        private void Handler(AttributionRequest message)
         {
             unsafe
             {
                 try
                 {
-                    var requestId = requestMsg.RequestId;
+                    var requestId = message.RequestId;
 
                     var currActor_uid = Context.Self.Path.Uid.ToString();
                     var senderActor_uid = Sender.Path.Uid.ToString();
@@ -40,7 +32,7 @@ namespace Akka.Cluster.API.Actors
                     var parent = Context.Parent;
                     var sys = Context.System;
 
-                    TypedReference typeRef = __makeref(requestMsg);
+                    TypedReference typeRef = __makeref(message);
                     IntPtr ptr = **(IntPtr**)(&typeRef);
                     string msgAddr = ptr.ToString();
                     long msgAddrInt = ptr.ToInt64();
@@ -48,20 +40,19 @@ namespace Akka.Cluster.API.Actors
                     string logMsg = string.Format("{0}Some message received. Request_id: {1}, CurrentActor: {2}, Sender: {3}, Obj address: {4}, Node: {5}",
                         Environment.NewLine, requestId, self.ToString(), senderActor_uid, msgAddr, nodeAddr);
 
-                    string filename = string.Format("TestFile-{0}.txt", currActor_uid);
+                    string filename = string.Format("TestFile-LogActor-{0}.txt", currActor_uid);
                     string filePath = string.Format("{0}{1}", ConfigurationManager.AppSettings["TestFilePath"], filename);
 
                     File.AppendAllText(filePath, logMsg);
-                    //Logger.Info(logMsg);
 
-                    _logWriterActor.Tell(requestMsg);
+                    //Logger.Info(logMsg);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     throw ex;
                 }
             }
-        }
 
+        }
     }
 }

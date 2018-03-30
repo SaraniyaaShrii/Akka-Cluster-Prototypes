@@ -37,26 +37,20 @@ namespace Akka.Cluster.API
 
             InitiateProcess(attribReq);
 
-            //actorSystem.WhenTerminated.Wait();
-
             return "";
         }
 
         private void InitiateProcess(AttributionRequest request)
         {
-            //ActorSystem actorSystem = Akka.Common.Util.Extensions.CreateActorSystem();
+            IActorRef requestHandlerActor = AkkaComponents.RequestHandlerActor;
 
-            //var requestHandlerActor = actorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), "requestHandlerActor");
-
-            //var requestHandlerActor = AkkaComponents.ActorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), "requestHandlerActor");
-            var requestHandlerActor = AkkaComponents.RequestHandlerActor;
-
-            IEnumerable<Routee> routees;
-            do
-            {
-                Thread.Sleep(1000);
-                routees = requestHandlerActor.Ask<Routees>(new GetRoutees()).Result.Members;
-            } while (routees.Any() == false);
+            
+            //IEnumerable<Routee> routees;
+            //do
+            //{
+            //    Thread.Sleep(1000);
+            //    routees = requestHandlerActor.Ask<Routees>(new GetRoutees()).Result.Members;
+            //} while (routees.Any() == false);
 
             requestHandlerActor.Tell(request);
         }

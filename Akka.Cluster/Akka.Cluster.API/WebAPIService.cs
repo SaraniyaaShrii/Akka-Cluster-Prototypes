@@ -11,6 +11,7 @@ using System.Web.Http;
 using System.Web.Http.SelfHost;
 using Akka.Actor;
 using Akka.Routing;
+using System.Threading;
 
 namespace Akka.Cluster.API
 {
@@ -54,7 +55,13 @@ namespace Akka.Cluster.API
         private static void InitializeActorSystem()
         {
             AkkaComponents.ActorSystem = Extensions.CreateActorSystem();
-            AkkaComponents.RequestHandlerActor = AkkaComponents.ActorSystem.ActorOf(Props.Empty.WithRouter(FromConfig.Instance), "requestHandlerActor");
+
+            var requestHandlerProps = Props.Empty.WithRouter(FromConfig.Instance);
+            var requestHandlerActor = AkkaComponents.ActorSystem.ActorOf(requestHandlerProps, "requestHandlerActor");
+
+            AkkaComponents.RequestHandlerActor = requestHandlerActor;
+
+            //var routees = AkkaComponents.RequestHandlerActor.Ask<Routees>(new GetRoutees()).Result.Members;
         }
 
         private void CreateEventLog(string baseAddress)
