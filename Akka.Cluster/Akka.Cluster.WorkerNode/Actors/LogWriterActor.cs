@@ -5,7 +5,7 @@ using Akka.Common.Messages;
 using System.Configuration;
 using log4net;
 
-namespace Akka.Cluster.API
+namespace Akka.Cluster.WorkerNode.Actors
 {
     public class LogWriterActor : ReceiveActor
     {

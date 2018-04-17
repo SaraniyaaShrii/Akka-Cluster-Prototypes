@@ -1,5 +1,5 @@
 ﻿using Akka.Actor;
-using Akka.Cluster.API.Actors;
+using Akka.Cluster.WorkerNode.Actors;
 using Akka.Routing;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ using Akka.Common;
 using Akka.Common.Util;
 using log4net;
 
-namespace Akka.Cluster.API
+namespace Akka.Cluster.WorkerNode
 {
     class Program
     {

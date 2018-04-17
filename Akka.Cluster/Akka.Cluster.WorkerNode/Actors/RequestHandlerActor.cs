@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Akka.Cluster.API.Actors
+namespace Akka.Cluster.WorkerNode.Actors
 {
     public class RequestHandlerActor : ReceiveActor
     {
